@@ -27,6 +27,11 @@ Repositorio con los ejercicios resueltos de las prácticas de la materia **Arqui
 * **Estructuras de control:** Traducción de expresiones lógicas compuestas, bloques `if-then-else` y evaluación corta (*short-circuit*).
 * **Iteraciones y Bucles Anidados:** Implementación eficiente de bucles `while`, `for`, recorrido de vectores/cadenas y algoritmos de ordenamiento (ej. *Bubble Sort*).
 
+### 📄 `Subrutinas/`: Manejo de Funciones, Pila (Stack) y Syscalls
+* **Subrutinas Hoja (*Leaf Procedures*):** Prólogo y epílogo, ajuste del puntero de pila (`$sp`), preservación de registros guardados (`$s0`-`$s7`) y uso de `jr $ra`.
+* **Subrutinas No Hoja y Recursión (*Non-Leaf Procedures*):** Preservación de la dirección de retorno (`$ra`) en la pila para llamadas anidadas y recursivas (ej. cálculo de Factorial).
+* **Módulos I/O y Reutilización:** Abstracción de llamadas al sistema (*syscalls*) en subprogramas modulares (`PromptInt`, `PrintInt`, `PrintString`, `ImprimirNuevaLinea`, `Exit`).
+* **Pasaje de Parámetros:** Convención estándar de MIPS utilizando registros de argumentos (`$a0`-`$a3`) y retorno de valores (`$v0`-`$v1`).
 ---
 
 ## 🚀 Cómo ejecutar los ejercicios en MARS
