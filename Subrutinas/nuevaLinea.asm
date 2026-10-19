@@ -1,0 +1,44 @@
+# Propósito: 
+# Ilustrar la implementación y la llamada a un subprograma llamado ImprimirNuevaLinea.
+# Se utiliza para ilustrar cómo regresar de un programa.
+
+.text
+main: 	# leer un valor de entrada del usuario
+	li $v0, 4 	
+	la $a0, prompt	
+	syscall 		
+	li $v0, 5		
+	syscall
+	move $s0, $v0
+	
+	# imprimir el valor de vuelta al usuario
+	jal ImprimirNuevaLinea
+	li $v0, 4
+	la $a0, result
+	syscall
+	li $v0, 1
+	move $a0, $s0
+	syscall
+	
+	# llamar al subprograma Exit para salir
+	jal Exit
+
+.data
+prompt:	.asciiz "Por favor, introduzca un numero entero: "
+result:	.asciiz "Has introducido: "
+
+.text
+ImprimirNuevaLinea:
+	li $v0, 4
+	la $a0, _PNL_newline
+	syscall
+	jr $ra
+	
+.data
+_PNL_newline:
+	.asciiz "\n"
+
+.text
+Exit:	li $v0, 10
+	syscall 
+	
