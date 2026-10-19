@@ -32,6 +32,10 @@ Repositorio con los ejercicios resueltos de las prácticas de la materia **Arqui
 * **Subrutinas No Hoja y Recursión (*Non-Leaf Procedures*):** Preservación de la dirección de retorno (`$ra`) en la pila para llamadas anidadas y recursivas (ej. cálculo de Factorial).
 * **Módulos I/O y Reutilización:** Abstracción de llamadas al sistema (*syscalls*) en subprogramas modulares (`PromptInt`, `PrintInt`, `PrintString`, `ImprimirNuevaLinea`, `Exit`).
 * **Pasaje de Parámetros:** Convención estándar de MIPS utilizando registros de argumentos (`$a0`-`$a3`) y retorno de valores (`$v0`-`$v1`).
+
+### 📄 `Practica-examen/`: Ejercicios Integradores y Modelos de Examen
+* **Búsqueda de Máximo en Vector (`Ejercicio1.asm`):** Recorrido de vector en memoria estática delegando comparaciones mediante subrutinas no hoja (`encontrar_maximo` -> `max`) con preservación de `$ra` y registros guardados.
+* **Modificación de Vector en Memoria (`Ejercicio2.asm`):** Iteración y actualización directa en memoria mediante subrutinas anidadas (`modificar_vector` -> `sumar_constante`), gestionando múltiples parámetros en registros `$a0` - `$a2`.
 ---
 
 ## 🚀 Cómo ejecutar los ejercicios en MARS
