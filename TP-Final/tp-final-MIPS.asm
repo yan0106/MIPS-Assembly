@@ -121,61 +121,69 @@ print_error:
 exit_program:
     	li $v0, 10		# Syscall 10: Exit program
     	syscall
-    	  	
+
+# Subrutina: newcategory
+# Propósito: Crea una nueva categoría y la añade a la lista de categorías.
+newcaterogy:
+    	# 1. Preparar la pila (guardar el registro $ra)
+    	addi $sp, $sp, -4	# Reserva 4 bytes en la pila
+    	sw $ra, 4($sp)          # Guarda el registro de retorno ($ra)
+
+    	# 2. Pedir el nombre de la categoría al usuario
+    	la $a0, catName         # Carga en $a0 la dirección del texto "Ingrese el nombre..."
+    	jal getblock            # Llama a getblock: pide memoria y guarda el string ingresado en el bloque
+    	move $a2, $v0           # Mueve el puntero del nuevo string (que devolvió getblock) al registro $a2
+
+    	# 3. Añadir el nodo a la lista de categorías (cclist)
+    	la $a0, cclist          # Carga en $a0 la dirección de la lista de categorías
+    	li $a1, 0               # $a1 = NULL (0). Indica que es un nodo de categoría (su lista interna de objetos está vacía)
+    	jal addnode             # Llama a addnode para enganchar este nuevo bloque en la lista
+
+    	# 4. Actualizar la categoría activa (wclist) si era la primera
+    	lw $t0, wclist          # Carga en $t0 el puntero actual de la categoría de trabajo
+    	bnez $t0, newcategory_end # Si ya hay una categoría activa (wclist != 0), salta al final
+    	sw $v0, wclist          # Si wclist era 0, la actualizamos para que apunte al nodo recién creado (en $v0)
+
+newcategory_end:
+    	# 5. Retornar éxito y limpiar la pila
+    	li $v0, 0               # Carga 0 en $v0 para indicar que la operación fue un éxito
+    	lw $ra, 4($sp)          # Restaura el registro de retorno original ($ra) desde la pila
+   	addi $sp, $sp, 4        # Libera el espacio de la pila (4 bytes)
+    	jr $ra                  # Retorna al menú principal  
+  
+# ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
 # Stubs (etiquetas vacías para compilar el menú)
 # Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
 
 nextcategory:
-    li $v0, 0
-    jr $ra
+	li $v0, 0
+	jr $ra
 
 prevcategory:
-    li $v0, 0
-    jr $ra
+    	li $v0, 0
+    	jr $ra
 
 listcategories:
-    li $v0, 0
-    jr $ra
+    	li $v0, 0
+    	jr $ra
 
 delcategory:
-    li $v0, 0
-    jr $ra
+    	li $v0, 0
+    	jr $ra
 
 newobject:
-    li $v0, 0
-    jr $ra
+    	li $v0, 0
+    	jr $ra
 
 listobjects:
-    li $v0, 0
-    jr $ra
+    	li $v0, 0
+    	jr $ra
 
 delobject:
-    li $v0, 0
-    jr $ra
+    	li $v0, 0
+    	jr $ra
 
 # ----------------------------------------------------------------------
-newcaterogy:
-    	addi $sp, $sp, -4	# Reserva 4 bytes en la pila (stack)
-    	sw $ra, 4($sp)          # Guarda el registro de retorno ($ra) en la pila
-
-    	la $a0, catName         # Carga en $a0 la dirección del mensaje "Ingrese el nombre..."
-    	jal getblock            # Llama a getblock: pide memoria y guarda el string ingresado
-
-    	move $a2, $v0           # $a2 = puntero al string con el nombre de la nueva categoría
-    	la $a0, cclist          # $a0 = dirección de la lista principal de categorías (cclist)
-    	li $a1, 0               # $a1 = NULL (0). Le avisa a addnode que es una categoría, no un objeto
-    	jal addnode             # Llama a addnode para crear y enlazar el nuevo nodo en la lista
-
-    	lw $t0, wclist          # Carga en $t0 el puntero a la categoría seleccionada actualmente
-    	bnez $t0, newcategory_end # Si ya hay una categoría seleccionada (no es 0), salta al final
-    	sw $v0, wclist          # Actualiza la lista de trabajo (wclist) apuntándola a esta nueva categoría
-
-newcategory_end:
-    	li $v0, 0               # Carga un 0 en $v0 para indicar que la operación fue un éxito (código de retorno)
-    	lw $ra, 4($sp)          # Restaura el registro de retorno ($ra) original desde la pila
-    	addi $sp, $sp, 4	# Libera los 4 bytes de la pila (pop)
-    	jr $ra                  # Retorna a la función principal (al menú)
-
 # node* smalloc() 
 smalloc:
 	lw $t0, slist		# Carga en $t0 la dirección del primer bloque de la lista de liberados.
@@ -199,6 +207,7 @@ sfree:
     	jr $ra                	# Retorna a la función que lo llamó.
 
 # ------------------ Anexos -------------------------------------------------------------
+
 # a0: list address
 # a1: NULL if category, node address if object
 # v0: node address added
