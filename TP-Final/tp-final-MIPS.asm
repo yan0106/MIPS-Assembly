@@ -49,13 +49,85 @@ menu_loop:
 	li $v0, 4		# Syscall 4: Print String
     	la $a0, menu		# Carga la dirección del texto del menú
     	syscall
+    	
 	# 3. Leer la opción del usuario
     	li $v0, 5		# Syscall 5: Read Integer
     	syscall			# El número ingresado queda guardado en $v0
-    	move $s0, $v0		# Guardamos la opción en $s0 de forma segura
+    	move $s0, $v0		# Guarda la opción en $s0 de forma segura
 	
+	# 4. Validar la entrada (0 = Salir, 1-8 = Ejecutar, Otro = Error)
+    	beqz $s0, exit_program		# Si ingresó 0, salta al fin del programa
+    	bltz $s0, invalid_option	# Si es menor que 0, error
+    	li $t1, 8
+    	bgt $s0, $t1, invalid_option	# Si es mayor que 8, error
+
+	# 5. Calcular desplazamiento y ejecutar la subrutina	
+	# Como la opción 1 está en la posición 0, le resto 1 a la opción
+    	addi $t1, $s0, -1
+    	# Multiplico por 4 para obtener el byte exacto en la memoria
+    	sll $t1, $t1, 2		# Shift Left Logical por 2 es igual a multiplicar por 4
+    	# Buscar la dirección en el vector
+    	la $t0, schedv		# Dirección base del vector
+    	add $t0, $t0, $t1	# Suma el desplazamiento
+    	lw $t2, 0($t0)		# Carga en $t2 la dirección de la subrutina a ejecutar
+	jalr $t2		# Salta a la dirección contenida en $t2 y guarda el retorno
+    
+    	# 6. Manejar el código de error devuelto por la subrutina
+    	# Las funciones devuelven 0 en $v0 si hay éxito, o un código > 0 si hay error.
+    	beqz $v0, success_msg	# Si $v0 es 0, salió bien
+    	# Si no es 0, imprimir el código de error
+    	move $a0, $v0		# Pasa el número de error a $a0
+    	jal print_error		# Llama a la subrutina para imprimir "Error: XXX"
+    	j menu_loop     	# Vuelve al menú
+
+success_msg:
+    	li $v0, 4
+    	la $a0, success
+    	syscall
+    	j menu_loop		# Vuelve al inicio del bucle
+    	
+    	# Excepciones del flujo principal
+invalid_option:
+    	li $a0, 101		# Error 101: Selección inexistente
+    	jal print_error
+    	j menu_loop
+
+# Subrutina: print_error
+# Entrada: $a0 contiene el número de error (ej: 101, 201)
+print_error:
+    	# 1. Asegurar el número. 
+    	# Como syscall 4 va a sobrescribir $a0 con la dirección del texto, 
+    	# se guarda el número del error en un temporal ($t0) para no perderlo.
+    	move $t0, $a0       
+
+    	# 2. Imprimir el texto "Error: "
+    	li $v0, 4		# Servicio 4: Imprimir string
+    	la $a0, error       	# Carga la dirección de la palabra "Error: "
+    	syscall
+
+    	# 3. Imprimir el número del error
+    	li $v0, 1           	# Servicio 1: Imprimir entero
+    	move $a0, $t0       	# Recupera el número desde $t0 hacia $a0
+    	syscall
+
+    	# 4. Imprimir un salto de línea en consola
+    	li $v0, 4		# Servicio 4: Imprimir string
+    	la $a0, return		# Carga la dirección del "\n" (declarado en .data)
+    	syscall
+
+    	# 5. Retornar al menú
+    	jr $ra
+						
+exit_program:
+    	li $v0, 10		# Syscall 10: Exit program
+    	syscall
+    	
+    	
+    	
+...	
 	
-	
+
+
 
 newcaterogy:
     	addi $sp, $sp, -4	# Reserva 4 bytes en la pila (stack)
