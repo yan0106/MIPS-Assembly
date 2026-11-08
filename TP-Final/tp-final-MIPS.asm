@@ -121,14 +121,39 @@ print_error:
 exit_program:
     	li $v0, 10		# Syscall 10: Exit program
     	syscall
-    	
-    	
-    	
-...	
-	
+    	  	
+# Stubs (etiquetas vacías para compilar el menú)
+# Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
 
+nextcategory:
+    li $v0, 0
+    jr $ra
 
+prevcategory:
+    li $v0, 0
+    jr $ra
 
+listcategories:
+    li $v0, 0
+    jr $ra
+
+delcategory:
+    li $v0, 0
+    jr $ra
+
+newobject:
+    li $v0, 0
+    jr $ra
+
+listobjects:
+    li $v0, 0
+    jr $ra
+
+delobject:
+    li $v0, 0
+    jr $ra
+
+# ----------------------------------------------------------------------
 newcaterogy:
     	addi $sp, $sp, -4	# Reserva 4 bytes en la pila (stack)
     	sw $ra, 4($sp)          # Guarda el registro de retorno ($ra) en la pila
@@ -173,7 +198,7 @@ sfree:
     	sw $a0, slist         	# Actualiza 'slist' para que el bloque recién liberado ($a0) sea la nueva cabeza (lista de "no usados").
     	jr $ra                	# Retorna a la función que lo llamó.
 
-# Anexos
+# ------------------ Anexos -------------------------------------------------------------
 # a0: list address
 # a1: NULL if category, node address if object
 # v0: node address added
@@ -214,7 +239,7 @@ delnode:
 	addi $sp, $sp, -8
 	sw $ra, 8($sp)
 	sw $a0, 4($sp)
-l	w $a0, 8($a0) 		# get block address
+	lw $a0, 8($a0) 		# get block address
 	jal sfree 		# free block
 	lw $a0, 4($sp) 		# restore argument a0
 	lw $t0, 12($a0) 	# get address to next node of a0 node
@@ -235,4 +260,20 @@ delnode_exit:
 	lw $ra, 8($sp)
 	addi $sp, $sp, 8
 	jr $ra
-
+	
+# a0: msg to ask
+# v0: block address allocated with string
+getblock:
+	addi $sp, $sp, -4
+	sw $ra, 4($sp)
+	li $v0, 4
+	syscall
+	jal smalloc
+	move $a0, $v0
+	li $a1, 16
+	li $v0, 8
+	syscall
+	move $v0, $a0
+	lw $ra, 4($sp)
+	addi $sp, $sp, 4
+	jr $ra
