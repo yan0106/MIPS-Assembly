@@ -241,13 +241,69 @@ error_301:
     	li $v0, 301             # Error 301: No hay categorías creadas
     	jr $ra
 
+# Subrutina: delcategory
+# Propósito: Borra la categoría actualmente seleccionada (wclist).
+# Si tiene objetos vinculados, libera primero todos sus nodos.
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 401 si no hay categorías.
+
+delcategory:
+	# 1. Preservar registros en la pila ($ra y los $s que usemos)
+    	addi $sp, $sp, -12
+    	sw $ra, 12($sp)
+    	sw $s0, 8($sp)
+    	sw $s1, 4($sp)
+    	
+    	# 2. Verificar si hay categorías creadas
+    	lw $s0, wclist          # $s0 = categoría actual a borrar
+    	beqz $s0, error_401     # Si es NULL/0, salta a error 401
+    	
+del_objects_loop:
+    	# 3. Revisar la sublista de objetos (ubicada en offset 4 de la categoría)
+    	lw $t0, 4($s0)          # $t0 = dirección del primer objeto de la sublista
+    	beqz $t0, del_cat_node  # Si la lista de objetos está vacía (0), va a borrar la categoría
+    	
+    	# Borrar el primer objeto de la lista circular de objetos
+    	move $a0, $t0           # Argumento 1: Nodo del objeto a borrar
+    	addi $a1, $s0, 4        # Argumento 2: Dirección del puntero a la lista de objetos
+    	jal delnode             # Borra el objeto y libera su memoria con sfree
+    	j del_objects_loop      # Repite hasta que la sublista quede en 0
+    	
+del_cat_node:
+    	# 4. Determinar cuál será la nueva categoría seleccionada (wclist)
+    	lw $t1, 12($s0)         # $t1 = Siguiente categoría (offset 12)
+    	beq $t1, $s0, only_one_cat # Si la siguiente es ella misma, era la única que había
+
+    	sw $t1, wclist          # Si hay más, wclist pasa a ser la siguiente
+    	j execute_del_cat
+    	
+only_one_cat:
+	sw $zero, wclist        # Nulifica la categoría activa
+    	sw $zero, cclist        # Nulifica la cabeza de la lista principal
+	
+execute_del_cat:
+    	# 5. Borrar la categoría de la lista cclist
+    	move $a0, $s0           # Argumento 1: Nodo de la categoría a borrar
+    	la $a1, cclist          # Argumento 2: Dirección de la lista principal de categorías
+    	jal delnode             # Borra la categoría y libera su bloque de memoria
+
+    	# 6. Salida exitosa
+    	li $v0, 0               # Éxito (0)
+    	j delcategory_exit
+     
+error_401:
+    	li $v0, 401             # Error 401: No hay categorías para borrar
+
+delcategory_exit:
+    	# 7. Restaurar pila y retornar
+    	lw $s1, 4($sp)
+    	lw $s0, 8($sp)
+    	lw $ra, 12($sp)
+    	addi $sp, $sp, 12
+    	jr $ra
+
 # ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
 # Stubs (etiquetas vacías para compilar el menú)
 # Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
-
-delcategory:
-    	li $v0, 0
-    	jr $ra
 
 newobject:
     	li $v0, 0
