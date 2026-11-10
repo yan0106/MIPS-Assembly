@@ -1,8 +1,8 @@
 .data
-slist:	 .word 0
-cclist:  .word 0
-wclist:  .word 0
-schedv:  .space 32
+slist:	 .word 0		# Simple List o lista enlazada simple de bloques liberados
+cclist:  .word 0		# Circular Category List o lista principal de categorías
+wclist:  .word 0		# Working Category List o lista/nodo de la categoría de trabajo actual
+schedv:  .space 32		# Scheduler Vector
 menu: 	 .ascii "Colecciones de objetos categorizados\n"
 	 .ascii "====================================\n"
 	 .ascii "1-Nueva categoria\n"
@@ -193,15 +193,57 @@ selcat_success:
     
     	li $v0, 0               
     	jr $ra  
-  
-  
+
+# Subrutina: listcategories
+# Propósito: Recorre e imprime todas las categorías de la lista circular,
+# marcando la categoría en curso con '>'.
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 301 si no hay categorías.
+listcategories:
+    	lw $t0, cclist          # Carga el puntero inicial de la lista de categorías
+    	beqz $t0, error_301     # Si la lista está vacía (0), salta a devolver error 301
+
+    	lw $t1, wclist          # Carga la dirección de la categoría en curso (seleccionada)
+    	move $t2, $t0           # Puntero iterador: empieza en el primer nodo (cclist)
+
+list_loop:
+    	# 1. Determina si el nodo actual ($t2) es la categoría seleccionada ($t1)
+    	bne $t2, $t1, print_space
+    
+    	# Imprime el selector '>' (código ASCII 62)
+    	li $a0, 62              
+    	j print_char
+
+print_space:
+    	# Imprime un espacio ' ' (código ASCII 32)
+    	li $a0, 32              
+
+print_char:
+    	li $v0, 11              # Syscall 11: Print Character
+    	syscall
+
+    	# 2. Imprime el nombre de la categoría actual
+    	# Recordatorio: el nombre/string está en el desplazamiento 8 ($t2 + 8)
+    	lw $a0, 8($t2)          # Carga la dirección del string guardado en el nodo
+    	li $v0, 4               # Syscall 4: Print String
+    	syscall                 # Imprime el nombre (getblock ya incluye el \n)
+
+    	# 3. Avanza al siguiente nodo en la lista circular
+    	lw $t2, 12($t2)         # Carga el puntero al sucesor (offset 12)
+
+    	# 4. Condición de parada: si no volvimos al inicio ($t0), continúa el bucle
+    	bne $t2, $t0, list_loop
+
+    	# Si completamos la vuelta, retorna éxito
+    	li $v0, 0               # Cero indica éxito
+    	jr $ra
+
+error_301:
+    	li $v0, 301             # Error 301: No hay categorías creadas
+    	jr $ra
+
 # ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
 # Stubs (etiquetas vacías para compilar el menú)
 # Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
-
-listcategories:
-    	li $v0, 0
-    	jr $ra
 
 delcategory:
     	li $v0, 0
