@@ -350,10 +350,10 @@ newobject_exit:
 
 listobjects:
     	lw $t0, wclist          # Carga categoría activa
-    	beqz $t0, error_701     # Si es 0, error 601
+    	beqz $t0, error_601     # Si es 0, error 601
 
     	lw $t1, 4($t0)          # Carga cabeza de la sublista de objetos (offset 4)
-    	beqz $t1, error_702     # Si es 0, la categoría no tiene objetos (error 602)
+    	beqz $t1, error_602     # Si es 0, la categoría no tiene objetos (error 602)
 
     	move $t2, $t1           # $t2 = Puntero iterador (arranca en la cabeza de objetos)
 
@@ -389,11 +389,11 @@ list_obj_loop:
     	jr $ra
 
 error_601:
-    	li $v0, 701
+    	li $v0, 601
     	jr $ra
     	
 error_602:
-    	li $v0, 702
+    	li $v0, 602
     	jr $ra
 
 # ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
