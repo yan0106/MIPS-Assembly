@@ -396,12 +396,69 @@ error_602:
     	li $v0, 602
     	jr $ra
 
-# ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
-# Stubs (etiquetas vacías para compilar el menú)
-# Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
+# Subrutina: delobject
+# Propósito: Pide un ID de objeto y lo elimina de la categoría activa.
+# Devuelve:  $v0 = 0 (Éxito), $v0 = 701 (Sin cat), $v0 = 702 (Sin obj), $v0 = 703 (ID no hallado).
 
 delobject:
-    	li $v0, 0
+    	# 1. Preservar pila
+    	addi $sp, $sp, -12
+    	sw $ra, 12($sp)
+    	sw $s0, 8($sp)
+    	sw $s1, 4($sp)
+
+    	# 2. Validaciones iniciales
+    	lw $s0, wclist          # $s0 = categoría activa
+    	beqz $s0, error_701
+
+    	lw $s1, 4($s0)          # $s1 = primer objeto
+    	beqz $s1, error_702
+
+    	# 3. Pedir el ID del objeto a eliminar
+    	li $v0, 4
+    	la $a0, idObj
+    	syscall
+
+   	li $v0, 5               # Read Integer
+    	syscall
+    	move $t0, $v0           # $t0 = ID ingresado por el usuario (dirección del nodo)
+
+    	# 4. Buscar el objeto en la lista circular
+    	move $t1, $s1           # $t1 = iterador
+
+find_obj_loop:
+    	beq $t1, $t0, found_obj # ¡Lo encontramos!
+
+    	lw $t1, 12($t1)         # Siguiente objeto
+    	bne $t1, $s1, find_obj_loop # Si no volvió al inicio, sigue buscando
+
+    	j error_703             # Si dio toda la vuelta sin encontrarlo, error 803
+
+found_obj:
+    	# 5. Borrar el nodo usando delnode
+    	move $a0, $t1           # $a0 = dirección del nodo objeto a borrar
+    	addi $a1, $s0, 4        # $a1 = dirección del puntero a la sublista de objetos (&4(wclist))
+    	jal delnode             # Desengancha y libera la memoria
+
+    	li $v0, 0               # Éxito
+    	j delobject_exit
+
+error_701:
+    	li $v0, 701
+    	j delobject_exit
+    	
+error_702:
+    	li $v0, 702
+    	j delobject_exit
+    	
+error_703:
+    	li $v0, 703
+
+delobject_exit:
+    	lw $s1, 4($sp)
+    	lw $s0, 8($sp)
+    	lw $ra, 12($sp)
+    	addi $sp, $sp, 12
     	jr $ra
 
 # ----------------------------------------------------------------------
