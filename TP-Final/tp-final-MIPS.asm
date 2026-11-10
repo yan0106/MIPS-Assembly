@@ -94,6 +94,7 @@ invalid_option:
 
 # Subrutina: print_error
 # Entrada: $a0 contiene el número de error (ej: 101, 201)
+
 print_error:
     	# 1. Asegurar el número. 
     	# Como syscall 4 va a sobrescribir $a0 con la dirección del texto, 
@@ -124,6 +125,7 @@ exit_program:
 
 # Subrutina: newcategory
 # Propósito: Crea una nueva categoría y la añade a la lista de categorías.
+
 newcaterogy:
     	# 1. Preparar la pila (guardar el registro $ra)
     	addi $sp, $sp, -4	# Reserva 4 bytes en la pila
@@ -152,6 +154,7 @@ newcategory_end:
     	jr $ra                  # Retorna al menú principal  
   
 # Subrutina: nextcategory
+
 nextcategory:
     	lw $t0, wclist          # Carga el puntero a la categoría seleccionada actual
     	beqz $t0, error_201     # Si es 0 (no hay categorías), error 201
@@ -163,6 +166,7 @@ nextcategory:
     	j selcat_success        # Salta a imprimir mensaje de éxito
 
 # Subrutina: prevcategory
+
 prevcategory:
     	lw $t0, wclist          # Carga el puntero a la categoría actual
     	beqz $t0, error_201     # Si es 0 (no hay categorías), error 201
@@ -174,6 +178,7 @@ prevcategory:
     	j selcat_success        
 
 # Subrutinas auxiliares
+
 error_201:
     	li $v0, 201
     	jr $ra
@@ -198,6 +203,7 @@ selcat_success:
 # Propósito: Recorre e imprime todas las categorías de la lista circular,
 # marcando la categoría en curso con '>'.
 # Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 301 si no hay categorías.
+
 listcategories:
     	lw $t0, cclist          # Carga el puntero inicial de la lista de categorías
     	beqz $t0, error_301     # Si la lista está vacía (0), salta a devolver error 301
@@ -303,7 +309,7 @@ delcategory_exit:
 
 # Subrutina: newobject
 # Propósito: Anexa un nuevo objeto a la sublista de la categoría seleccionada (wclist).
-# Devuelve:  $v0 = 0 (Éxito), $v0 = 601 (No hay categoría seleccionada).
+# Devuelve:  $v0 = 0 (Éxito), $v0 = 501 (No hay categoría seleccionada).
 
 newobject:
     	# 1. Reservar pila
@@ -313,7 +319,7 @@ newobject:
     
    	# 2. Verificar que exista una categoría activa
     	lw $s0, wclist          # $s0 = nodo de la categoría activa
-    	beqz $s0, error_601     # Si no hay categoría seleccionada, error 601
+    	beqz $s0, error_501     # Si no hay categoría seleccionada, error 601
 
 	# 3. Pedir el nombre del objeto
     	la $a0, objName         # Carga mensaje "Ingrese el nombre de un objeto: "
@@ -329,13 +335,65 @@ newobject:
     	li $v0, 0
     	j newobject_exit
 
-error_601:
-    	li $v0, 601             # Error 601: No hay categoría seleccionada
+error_501:
+    	li $v0, 501             # Error 501: No hay categoría seleccionada
 
 newobject_exit:
     	lw $s0, 4($sp)
     	lw $ra, 8($sp)
     	addi $sp, $sp, 8
+    	jr $ra
+
+# Subrutina: listobjects
+# Propósito: Lista los objetos de la categoría en curso mostrando ID y Nombre.
+# Devuelve:  $v0 = 0 (Éxito), $v0 = 601 (Sin categoría), $v0 = 602 (Sin objetos).
+
+listobjects:
+    	lw $t0, wclist          # Carga categoría activa
+    	beqz $t0, error_701     # Si es 0, error 601
+
+    	lw $t1, 4($t0)          # Carga cabeza de la sublista de objetos (offset 4)
+    	beqz $t1, error_702     # Si es 0, la categoría no tiene objetos (error 602)
+
+    	move $t2, $t1           # $t2 = Puntero iterador (arranca en la cabeza de objetos)
+
+list_obj_loop:
+    	# 1. Imprimir ID del objeto (la dirección de memoria del nodo en decimal/hex)
+    	move $a0, $t2           # Pasa la dirección del nodo como ID
+    	li $v0, 1               # Syscall 1: Print Integer
+    	syscall
+
+    	# 2. Imprimir separador " -> "
+    	li $v0, 11
+    	li $a0, 32              # Espacio ' '
+    	syscall
+    	li $a0, 45              # Guion '-'
+    	syscall
+    	li $a0, 62              # Flecha '>'
+    	syscall
+    	li $a0, 32              # Espacio ' '
+   	syscall
+
+    	# 3. Imprimir el Nombre del objeto (offset 8 del nodo)
+    	lw $a0, 8($t2)
+    	li $v0, 4               # Syscall 4: Print String
+    	syscall
+
+    	# 4. Avanzar al siguiente objeto (offset 12)
+    	lw $t2, 12($t2)
+
+    	# 5. Condición de fin: repetir si no se volvió a la cabeza
+    	bne $t2, $t1, list_obj_loop
+
+    	li $v0, 0               # Éxito
+    	jr $ra
+
+error_601:
+    	li $v0, 701
+    	jr $ra
+    	
+error_602:
+    	li $v0, 702
     	jr $ra
 
 # ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
