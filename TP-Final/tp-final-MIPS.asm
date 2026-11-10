@@ -93,6 +93,7 @@ invalid_option:
     	j menu_loop
 
 # Subrutina: print_error
+# Propósito: Imprime el código numérico de error formateado en consola ("Error: XXX\n")
 # Entrada: $a0 contiene el número de error (ej: 101, 201)
 
 print_error:
@@ -124,7 +125,10 @@ exit_program:
     	syscall
 
 # Subrutina: newcategory
-# Propósito: Crea una nueva categoría y la añade a la lista de categorías.
+# Propósito: Pide el nombre de una categoría y la añade al final de la lista 
+# principal circular de categorías (cclist). Si es la primera, 
+# la marca automáticamente como la categoría activa (wclist).
+# Devuelve:  $v0 = 0 si tuvo éxito.
 
 newcaterogy:
     	# 1. Preparar la pila (guardar el registro $ra)
@@ -154,6 +158,10 @@ newcategory_end:
     	jr $ra                  # Retorna al menú principal  
   
 # Subrutina: nextcategory
+# Propósito: Avanza la selección de la categoría activa (wclist) al 
+# siguiente nodo en la lista doble circular de categorías.
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 201 si no hay categorías, 
+# $v0 = 202 si existe una sola categoría.
 
 nextcategory:
     	lw $t0, wclist          # Carga el puntero a la categoría seleccionada actual
@@ -166,6 +174,10 @@ nextcategory:
     	j selcat_success        # Salta a imprimir mensaje de éxito
 
 # Subrutina: prevcategory
+# Propósito: Retrocede la selección de la categoría activa (wclist) al 
+# nodo anterior en la lista doble circular de categorías.
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 201 si no hay categorías, 
+# $v0 = 202 si existe una sola categoría.
 
 prevcategory:
     	lw $t0, wclist          # Carga el puntero a la categoría actual
@@ -182,6 +194,7 @@ prevcategory:
 error_201:
     	li $v0, 201
     	jr $ra
+    	
 error_202:
     	li $v0, 202
     	jr $ra
@@ -200,8 +213,8 @@ selcat_success:
     	jr $ra  
 
 # Subrutina: listcategories
-# Propósito: Recorre e imprime todas las categorías de la lista circular,
-# marcando la categoría en curso con '>'.
+# Propósito: Recorre e imprime en consola la lista completa de categorías, 
+# anteponiendo el símbolo '>' únicamente a la categoría seleccionada en curso.
 # Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 301 si no hay categorías.
 
 listcategories:
@@ -308,8 +321,9 @@ delcategory_exit:
     	jr $ra
 
 # Subrutina: newobject
-# Propósito: Anexa un nuevo objeto a la sublista de la categoría seleccionada (wclist).
-# Devuelve:  $v0 = 0 (Éxito), $v0 = 501 (No hay categoría seleccionada).
+# Propósito: Pide el nombre de un objeto y lo anexa a la sublista de 
+# objetos perteneciente a la categoría seleccionada en curso (wclist).
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 501 si no hay categoría seleccionada.
 
 newobject:
     	# 1. Reservar pila
@@ -345,8 +359,10 @@ newobject_exit:
     	jr $ra
 
 # Subrutina: listobjects
-# Propósito: Lista los objetos de la categoría en curso mostrando ID y Nombre.
-# Devuelve:  $v0 = 0 (Éxito), $v0 = 601 (Sin categoría), $v0 = 602 (Sin objetos).
+# Propósito: Recorre e imprime la sublista de objetos de la categoría en 
+# curso (wclist), mostrando el ID (dirección de memoria) y nombre.
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 601 si no hay categorías creadas, 
+# $v0 = 602 si la categoría seleccionada no contiene objetos.
 
 listobjects:
     	lw $t0, wclist          # Carga categoría activa
@@ -397,8 +413,11 @@ error_602:
     	jr $ra
 
 # Subrutina: delobject
-# Propósito: Pide un ID de objeto y lo elimina de la categoría activa.
-# Devuelve:  $v0 = 0 (Éxito), $v0 = 701 (Sin cat), $v0 = 702 (Sin obj), $v0 = 703 (ID no hallado).
+# Propósito: Pide el ID de un objeto y lo elimina de la sublista de objetos 
+# de la categoría activa, liberando la memoria del nodo.
+# Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 701 si no hay categorías creadas, 
+# $v0 = 702 si la categoría no tiene objetos, 
+# $v0 = 703 si el ID ingresado no fue encontrado.
 
 delobject:
     	# 1. Preservar pila
@@ -427,12 +446,12 @@ delobject:
     	move $t1, $s1           # $t1 = iterador
 
 find_obj_loop:
-    	beq $t1, $t0, found_obj # ¡Lo encontramos!
+    	beq $t1, $t0, found_obj # Lo encontró
 
     	lw $t1, 12($t1)         # Siguiente objeto
     	bne $t1, $s1, find_obj_loop # Si no volvió al inicio, sigue buscando
 
-    	j error_703             # Si dio toda la vuelta sin encontrarlo, error 803
+    	j error_703             # Si dio toda la vuelta sin encontrarlo, error 703
 
 found_obj:
     	# 5. Borrar el nodo usando delnode
