@@ -151,17 +151,53 @@ newcategory_end:
    	addi $sp, $sp, 4        # Libera el espacio de la pila (4 bytes)
     	jr $ra                  # Retorna al menú principal  
   
+# Subrutina: nextcategory
+nextcategory:
+    	lw $t0, wclist          # Carga el puntero a la categoría seleccionada actual
+    	beqz $t0, error_201     # Si es 0 (no hay categorías), error 201
+
+    	lw $t1, 12($t0)         # Carga en $t1 el puntero al sucesor (next), ubicado en el offset 12
+    	beq $t0, $t1, error_202 # Si el sucesor es el mismo nodo (hay solo 1), error 202
+
+    	sw $t1, wclist          # Actualiza wclist con el nuevo nodo seleccionado
+    	j selcat_success        # Salta a imprimir mensaje de éxito
+
+# Subrutina: prevcategory
+prevcategory:
+    	lw $t0, wclist          # Carga el puntero a la categoría actual
+    	beqz $t0, error_201     # Si es 0 (no hay categorías), error 201
+
+    	lw $t1, 0($t0)          # Carga en $t1 el puntero al antecesor (prev), ubicado en el offset 0
+    	beq $t0, $t1, error_202 # Si el antecesor es el mismo nodo (hay solo 1), error 202
+
+    	sw $t1, wclist          # Actualiza wclist con el nuevo nodo
+    	j selcat_success        
+
+# Subrutinas auxiliares
+error_201:
+    	li $v0, 201
+    	jr $ra
+error_202:
+    	li $v0, 202
+    	jr $ra
+
+selcat_success:
+    	li $v0, 4
+    	la $a0, selCat
+    	syscall
+    
+    	lw $t0, wclist          
+    	lw $a0, 8($t0)          # Puntero al string (nombre de la categoría en el offset 8)
+    	li $v0, 4
+    	syscall
+    
+    	li $v0, 0               
+    	jr $ra  
+  
+  
 # ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
 # Stubs (etiquetas vacías para compilar el menú)
 # Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
-
-nextcategory:
-	li $v0, 0
-	jr $ra
-
-prevcategory:
-    	li $v0, 0
-    	jr $ra
 
 listcategories:
     	li $v0, 0
