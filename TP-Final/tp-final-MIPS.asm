@@ -342,10 +342,6 @@ newobject_exit:
 # Stubs (etiquetas vacías para compilar el menú)
 # Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
 
-newobject:
-    	li $v0, 0
-    	jr $ra
-
 listobjects:
     	li $v0, 0
     	jr $ra
