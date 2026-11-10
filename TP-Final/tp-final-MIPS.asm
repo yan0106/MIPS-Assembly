@@ -301,6 +301,43 @@ delcategory_exit:
     	addi $sp, $sp, 12
     	jr $ra
 
+# Subrutina: newobject
+# Propósito: Anexa un nuevo objeto a la sublista de la categoría seleccionada (wclist).
+# Devuelve:  $v0 = 0 (Éxito), $v0 = 601 (No hay categoría seleccionada).
+
+newobject:
+    	# 1. Reservar pila
+    	addi $sp, $sp, -8
+    	sw $ra, 8($sp)
+    	sw $s0, 4($sp)
+    
+   	# 2. Verificar que exista una categoría activa
+    	lw $s0, wclist          # $s0 = nodo de la categoría activa
+    	beqz $s0, error_601     # Si no hay categoría seleccionada, error 601
+
+	# 3. Pedir el nombre del objeto
+    	la $a0, objName         # Carga mensaje "Ingrese el nombre de un objeto: "
+    	jal getblock            # Asigna bloque y lee el string
+    	move $a2, $v0           # $a2 = puntero al string ingresado
+    	
+    	# 4. Agregar el nodo a la sublista de objetos
+    	addi $a0, $s0, 4        # $a0 = dirección de la sublista de objetos (offset 4 de wclist)
+    	move $a1, $s0           # $a1 = puntero al nodo de la categoría contenedora
+    	jal addnode             # Engancha el nodo en la lista de objetos
+
+	# 5. Retornar éxito
+    	li $v0, 0
+    	j newobject_exit
+
+error_601:
+    	li $v0, 601             # Error 601: No hay categoría seleccionada
+
+newobject_exit:
+    	lw $s0, 4($sp)
+    	lw $ra, 8($sp)
+    	addi $sp, $sp, 8
+    	jr $ra
+
 # ----------------------------------------------------------------------  	  	  	  		  	  	  	  	  	  	  		  	  	  	
 # Stubs (etiquetas vacías para compilar el menú)
 # Todas devuelven 0 en $v0 por defecto (éxito) y retornan.
