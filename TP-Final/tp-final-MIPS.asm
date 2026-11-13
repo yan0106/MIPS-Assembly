@@ -1,3 +1,9 @@
+# Trabajo Práctico Final: Estructura de datos en assembly MIPS R2000
+# Consigna: Colecciones de objetos categorizados mediante listas enlazadas 
+# dobles circulares y gestión dinámica de memoria (Heap).
+# Alumna: Yandira Diaz
+# Materia: Arquitectura de las Computadoras I - AUS (IPS)
+
 .data
 slist:	 .word 0		# Simple List o lista enlazada simple de bloques liberados
 cclist:  .word 0		# Circular Category List o lista principal de categorías
