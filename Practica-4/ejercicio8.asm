@@ -24,6 +24,6 @@ subr:	add $v0, $a0, $a1
 
 # MARS no inserta jal main antes de empezar.
 # PC arranca directamente en 0x00400000 y $ra en 0x00000000.
-# Después de la ejecución de main, pc toma la dirección de inicio de main y $ra guarda
-# la dirección de la instrucción siguiente del código de arranque del simulador
-# (donde va a regregar al finalizar todo).
+# Teóricamente (como en XSPIM), después de ejecutar jal main, PC toma la dirección 
+# de inicio de main y $ra guarda la dirección de la instrucción siguiente del código 
+# de arranque del simulador (donde va a regresar al finalizar todo).
