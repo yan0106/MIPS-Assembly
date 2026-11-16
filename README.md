@@ -27,6 +27,12 @@ Repositorio con los ejercicios resueltos de las prácticas de la materia **Arqui
 * **Estructuras de control:** Traducción de expresiones lógicas compuestas, bloques `if-then-else` y evaluación corta (*short-circuit*).
 * **Iteraciones y Bucles Anidados:** Implementación eficiente de bucles `while`, `for`, recorrido de vectores/cadenas y algoritmos de ordenamiento (ej. *Bubble Sort*).
 
+### 📄 `Practica-4/`: Subrutinas, Gestión de la Pila y Paso de Parámetros
+* **Gestión de la pila (Stack LIFO):** Manipulación del puntero de pila (`$sp`) hacia direcciones descendentes mediante operaciones de apilado (*push*) y desapilado (*pop*), preservación de registros y limpieza de pila.
+* **Llamada, retorno y anidamiento:** Uso de `jal` y `jr $ra` para el control de flujo. Resguardo del registro `$ra` en la pila para implementar subrutinas anidadas (*non-leaf*) sin pérdida de direcciones de retorno.
+* **Convenciones de paso de parámetros:** Implementación del pasaje por **valor** y por **referencia** utilizando registros estándar (`$a0`-`$a3` para entrada, `$v0`-`$v1` para salida) y a través de la pila (`$sp`).
+* **Manipulación de estructuras de datos:** Subrutinas modulares para inversión de cadenas de caracteres, búsqueda de elementos en vectores y acceso indexado a matrices almacenadas por filas.  
+
 ### 📄 `Subrutinas/`: Manejo de Funciones, Pila (Stack) y Syscalls
 * **Subrutinas Hoja (*Leaf Procedures*):** Prólogo y epílogo, ajuste del puntero de pila (`$sp`), preservación de registros guardados (`$s0`-`$s7`) y uso de `jr $ra`.
 * **Subrutinas No Hoja y Recursión (*Non-Leaf Procedures*):** Preservación de la dirección de retorno (`$ra`) en la pila para llamadas anidadas y recursivas (ej. cálculo de Factorial).
