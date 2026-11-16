@@ -1,8 +1,8 @@
+#----------------------------------------------------------------------------
 # Trabajo Práctico Final: Estructura de datos en assembly MIPS R2000
-# Consigna: Colecciones de objetos categorizados mediante listas enlazadas 
-# dobles circulares y gestión dinámica de memoria (Heap).
 # Alumna: Yandira Diaz
 # Materia: Arquitectura de las Computadoras I - AUS (IPS)
+#----------------------------------------------------------------------------
 
 .data
 slist:	 .word 0		# Simple List o lista enlazada simple de bloques liberados
@@ -33,7 +33,7 @@ success: .asciiz "La operación se realizo con exito\n\n"
 main:	 
 	# 1. Inicializar el Vector Scheduler (schedv) 
     	la $t0, schedv		# Carga la dirección base del vector    
-    	la $t1, newcaterogy	# Opción 1
+    	la $t1, newcategory	# Opción 1
     	sw $t1, 0($t0)
     	la $t1, nextcategory	# Opción 2
     	sw $t1, 4($t0)
@@ -53,7 +53,7 @@ main:
 menu_loop:
 	# 2. Imprimir el menú de opciones
 	li $v0, 4		# Syscall 4: Print String
-    	la $a0, menu		# Carga la dirección del texto del menú
+    	la $a0, menu		
     	syscall
     	
 	# 3. Leer la opción del usuario
@@ -84,15 +84,14 @@ menu_loop:
     	# Si no es 0, imprimir el código de error
     	move $a0, $v0		# Pasa el número de error a $a0
     	jal print_error		# Llama a la subrutina para imprimir "Error: XXX"
-    	j menu_loop     	# Vuelve al menú
+    	j menu_loop     	
 
 success_msg:
     	li $v0, 4
     	la $a0, success
     	syscall
-    	j menu_loop		# Vuelve al inicio del bucle
+    	j menu_loop		
     	
-    	# Excepciones del flujo principal
 invalid_option:
     	li $a0, 101		# Error 101: Selección inexistente
     	jal print_error
@@ -109,18 +108,18 @@ print_error:
     	move $t0, $a0       
 
     	# 2. Imprimir el texto "Error: "
-    	li $v0, 4		# Servicio 4: Imprimir string
-    	la $a0, error       	# Carga la dirección de la palabra "Error: "
+    	li $v0, 4		# Syscall 4: Imprimir string
+    	la $a0, error       	
     	syscall
 
     	# 3. Imprimir el número del error
-    	li $v0, 1           	# Servicio 1: Imprimir entero
+    	li $v0, 1           	# Syscall 1: Imprimir entero
     	move $a0, $t0       	# Recupera el número desde $t0 hacia $a0
     	syscall
 
     	# 4. Imprimir un salto de línea en consola
-    	li $v0, 4		# Servicio 4: Imprimir string
-    	la $a0, return		# Carga la dirección del "\n" (declarado en .data)
+    	li $v0, 4		# Syscall 4: Imprimir string
+    	la $a0, return		
     	syscall
 
     	# 5. Retornar al menú
@@ -136,25 +135,25 @@ exit_program:
 # la marca automáticamente como la categoría activa (wclist).
 # Devuelve:  $v0 = 0 si tuvo éxito.
 
-newcaterogy:
+newcategory:
     	# 1. Preparar la pila (guardar el registro $ra)
-    	addi $sp, $sp, -4	# Reserva 4 bytes en la pila
-    	sw $ra, 4($sp)          # Guarda el registro de retorno ($ra)
+    	addi $sp, $sp, -4	
+    	sw $ra, 4($sp)          
 
     	# 2. Pedir el nombre de la categoría al usuario
-    	la $a0, catName         # Carga en $a0 la dirección del texto "Ingrese el nombre..."
+    	la $a0, catName         
     	jal getblock            # Llama a getblock: pide memoria y guarda el string ingresado en el bloque
     	move $a2, $v0           # Mueve el puntero del nuevo string (que devolvió getblock) al registro $a2
 
     	# 3. Añadir el nodo a la lista de categorías (cclist)
     	la $a0, cclist          # Carga en $a0 la dirección de la lista de categorías
     	li $a1, 0               # $a1 = NULL (0). Indica que es un nodo de categoría (su lista interna de objetos está vacía)
-    	jal addnode             # Llama a addnode para enganchar este nuevo bloque en la lista
+    	jal addnode             # Llama a addnode para enganchar el nuevo bloque en la lista
 
     	# 4. Actualizar la categoría activa (wclist) si era la primera
     	lw $t0, wclist          # Carga en $t0 el puntero actual de la categoría de trabajo
     	bnez $t0, newcategory_end # Si ya hay una categoría activa (wclist != 0), salta al final
-    	sw $v0, wclist          # Si wclist era 0, la actualizamos para que apunte al nodo recién creado (en $v0)
+    	sw $v0, wclist          # Si wclist era 0, la actualiza para que apunte al nodo recién creado (en $v0)
 
 newcategory_end:
     	# 5. Retornar éxito y limpiar la pila
@@ -486,8 +485,8 @@ delobject_exit:
     	addi $sp, $sp, 12
     	jr $ra
 
-# ----------------------------------------------------------------------
-# node* smalloc() 
+# ---------------------Subrutinas Obligatorias del Anexo-----------------------------------------------------------
+ 
 smalloc:
 	lw $t0, slist		# Carga en $t0 la dirección del primer bloque de la lista de liberados.
     	beqz $t0, sbrk		# Si la lista está vacía (es null/0), salta a 'sbrk' para pedir memoria nueva al S.O.
@@ -502,18 +501,16 @@ sbrk:
     	syscall               	# El sistema devuelve la dirección del nuevo bloque en $v0.
     	jr $ra                	# Retorna a la función que lo llamó.
 
-# void sfree(node* $a0)
 sfree:
 	lw $t0, slist		# Carga en $t0 la dirección actual de la cabeza de la lista de liberados.
 	sw $t0, 12($a0)       	# El campo 'next' (offset 12) del bloque a liberar ahora apunta a la cabeza actual.
     	sw $a0, slist         	# Actualiza 'slist' para que el bloque recién liberado ($a0) sea la nueva cabeza (lista de "no usados").
     	jr $ra                	# Retorna a la función que lo llamó.
 
-# ------------------ Anexos -------------------------------------------------------------
-
 # a0: list address
 # a1: NULL if category, node address if object
 # v0: node address added
+
 addnode:
 	addi $sp, $sp, -8
 	sw $ra, 8($sp)
@@ -575,6 +572,7 @@ delnode_exit:
 	
 # a0: msg to ask
 # v0: block address allocated with string
+
 getblock:
 	addi $sp, $sp, -4
 	sw $ra, 4($sp)
