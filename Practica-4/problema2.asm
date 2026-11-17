@@ -12,7 +12,7 @@ elemento:	.space 4
 .text
 main: 	la $a0, vector		# dirección del vector
 	li $a1, 5		# dimensión n
-	li $a2, 3		# elemento (i)
+	li $a2, 3		# índice (i) del elemento
 	
 	jal iesimo
 	
