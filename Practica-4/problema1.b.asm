@@ -11,7 +11,7 @@ cant:	.space 4
 .text
 main:
 	la $a0, vector		# a0 = dirección del vector por referencia
-	la $a1, elem		# a1 = direción del total de elementos del vector, por referencia
+	la $a1, elem		# a1 = dirección del total de elementos del vector, por referencia
 	la $a2, dato		# a2 = dirección de dato, por referencia
 	la $a3, cant		# a3 = dir de cant, por referencia
 	
