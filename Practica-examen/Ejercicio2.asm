@@ -1,3 +1,12 @@
+# Define en el segmento .data un vector de cinco enteros de 32 bits a partir de
+# la dirección 0x10010000 con los valores 10, 20, 30, 40, 50. El programa principal (main)
+# debe invocar a una subrutina llamada modificar_vector, pasándole como parámetros la
+# dirección del vector, la cantidad de elementos y un valor a sumar (por ejemplo, 5).
+# Para sumar el valor, modificar_vector no puede hacer la suma directamente. Debe iterar
+# sobre cada elemento e invocar en su interior a otra subrutina llamada sumar_constante,
+# pasándole el elemento actual y el valor constante.
+# Esta última subrutina devuelve la suma, y modificar_vector debe guardar ese nuevo valor
+# en la memoria original del vector.
 
 .data
 vector:		.word 10, 20, 30, 40, 50
@@ -22,6 +31,7 @@ vector:		.word 10, 20, 30, 40, 50
 # $a1 - cantidad de elementos
 # $a2 - constante para sumar
 # salida: ninguna (modifica la memoria directamente)
+
 modificar_vector:	# -- PROLOGO --
 		addi $sp, $sp, -16
 		sw $ra, 12($sp) 	# registro de retorno
@@ -60,6 +70,7 @@ fin_loop:		# -- EPILOGO --
 # devolver el resultado de cada suma.
 # entrada: $a0 - elemento del vector ; $a1 - constante para sumar
 # salida: $v0 - resultado de la suma
+
 sumar_constante:	
 		add $t0, $a0, $a1	# suma el elemento recibido ($a0) + 5 $(a1)
 		move $v0, $t0	# mueve el resultado a $v0 para devolverlo
