@@ -1,3 +1,13 @@
+# Implementa un programa en assembly de MIPS que dado un vector de enteros, encuentre 
+# el máximo y lo guarde en memoria. Utiliza la etiqueta vector para definir en memoria
+# estática de datos un vector de cinco enteros de 32 bits a partir de la dirección 
+# 0x10000000 con los valores 0x10, 30, 0x34, 0x20 y 60. 
+# El programa principal invocará a la función encontrar_maximo, pasándole
+# como parámetros la dirección base del vector y la cantidad de elementos. Esta función
+# iterará sobre los elementos y delegará la comparación a otra función llamada max, 
+# pasándole como parámetros dos elementos y devolviendo el mayor. Al finalizar, 
+# el programa principal debe guardar el resultado en la etiqueta maximo_vector de
+# la sección .data.
 
 .data	0x10000000
 vector:		.word	0x10, 30, 0x34, 0x20, 60
@@ -21,6 +31,7 @@ main:		# cargar los parámetros
 # propósito: iterar sobre los elementos de un vector para encontrar y devolver el valor máximo
 # entrada: $a0 - dirección base del vector; $a1 - cantidad de elementos
 # salida: $v0 - el valor máximo del vector
+
 encontrar_maximo:	
 # Como encontrar_maximo va a llamar internamente a otra función (max), 
 # estamos obligados por las convenciones de MIPS a guardar en la memoria RAM
@@ -41,6 +52,7 @@ encontrar_maximo:
 		# Una vez que el prólogo terminó y blindó la memoria, la subrutina 
 		# necesita asegurar los datos que recibió del main (la dirección del 
 		# vector y la cantidad de elementos).
+		
 		# --- COPIA DE PARÁMETROS ---
 		move $s0, $a0	# Protege la dirección del vector en $s0
 		move $s1, $a1	# Protege la cantidad de elementos en $s1 (5)
@@ -77,6 +89,7 @@ fin_loop:
 # propósito: devuelve el mayor de dos enteros
 # entrada: $a0 - elemento 1; $a1 - elemento 2
 # salida: $v0 - el elemento mayor
+
 max:
 		move $v0, $a0	# Asumimos primero que $a0 es el mayor
 		bge $a0, $a1, fin_max # Si $a0 >= $a1, la suposición era correcta. Saltamos al final.
