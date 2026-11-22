@@ -13,10 +13,9 @@
 .data
 msje_entero:	.asciiz "Ingrese un entero: "
 msje_fin:	.asciiz "Fin del programa"
-msje_error:	.asciiz "El número no es válido. "
+msje_error:	.asciiz "El número no es válido.\n"
 msje_res:	.asciiz "Resultado: "
-		.align 2
-resultado:	.space 4
+salto: 		.asciiz "\n"
 
 .text
 main:	# solicitar un entero A
@@ -47,8 +46,22 @@ main:	# solicitar un entero A
 	move $a0, $t0		# $a0: A
 	move $a1, $t1		# $a1: B
 	jal suma_cuadrados
-	# imprimir el resultado
+	# guardar resultado
+	move $t2, $v0
+	# imprimir mensaje resultado
+	la $a0, msje_res
+	li $v0, 4
+	syscall
+	# imprimir el valor
+	move $a0, $t2
+	li $v0, 1
+	syscall
+	# imprime un salto de linea
+	la $a0, salto
+	li $v0, 4
+	syscall	  
 	# repite
+	j main
 
 fin_programa:
 	# imprimir msje_fin
