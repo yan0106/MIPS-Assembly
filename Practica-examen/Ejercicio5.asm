@@ -1,5 +1,5 @@
 # Escriba un programa completo en MIPS R2000 que procese una cadena de texto
-# almacenada en memoria,cuente sus vocales y convierta las vocales minúsculas a 
+# almacenada en memoria, cuente sus vocales y convierta las vocales minúsculas a 
 # mayúsculas utilizando operaciones lógicas a nivel de bit.
 
 .data
@@ -48,7 +48,7 @@ main: 	# cargar cadena y llamar a subrutina para procesarla
 # Propósito: procesa la cadena almacenada en memoria, cuenta cuántas vocales tiene,
 # guarda esa cant de vocales en 'vocales', cambia las vocales minúsculas a mayúsculas
 # y sobreescribe el resultado en 'cadena'.
-# Entrada: $a0: dirección de inicio de cadena
+# Entrada: $a0: dirección de inicio de la cadena
 # Salida: ninguna porque almacena directamente el resultado en memoria
 
 modif_cadena:
