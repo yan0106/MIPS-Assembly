@@ -63,9 +63,11 @@ loop:
 	jal es_vocal
 	beqz $v0, siguiente	# si no es vocal, salta a siguiente
 	add $s1, $s1, 1		# si es_vocal: 1, suma 1 al contador de vocales
-	blt $s2, 'a', siguiente
-	bgt $s2, 'z', siguiente
-	andi $t0, $s2, 0xDF	# modifica la vocal minuscula a mayuscula con la máscara
+	# está entre ['a','z']?
+	blt $s2, 'a', siguiente	# si $s2 < 'a', salta a siguiente
+	bgt $s2, 'z', siguiente	# si $s2 > 'z', salta a siguiente
+	# pasó el filtro y está entre ['a','z']
+	andi $t0, $s2, 0xDF	# modifica la vocal minúscula a mayúscula con la máscara
 	sb $t0, ($s0)		# sobreescribe en 'cadena'
 
 siguiente:
