@@ -93,7 +93,7 @@ fin_loop:
 # Subrutina (hoja): es_vocal
 # Propósito: evalúa si el argumento recibido es una vocal. Si es una vocal devuelve 1,
 # caso contrario, devuelve 0.
-# Entrada: $a0: caracter acutal a evaluar
+# Entrada: $a0: caracter actual a evaluar
 # Salida: $v0: 1 o $v0: 0
 
 es_vocal:
