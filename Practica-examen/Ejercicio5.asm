@@ -25,6 +25,11 @@ main: 	# cargar cadena y llamar a subrutina para procesarla
 	li $v0, 1
 	syscall
 	
+	# imprimir salto de linea
+	la $a0, salto
+	li $v0, 4
+	syscall
+	
 	# imprimir msje_cadena
 	la $a0, msje_cadena
 	li $v0, 4
@@ -62,8 +67,8 @@ loop:
 	move $a0, $s2		# $a0: caracter actual
 	jal es_vocal
 	beqz $v0, siguiente	# si no es vocal, salta a siguiente
-	add $s1, $s1, 1		# si es_vocal: 1, suma 1 al contador de vocales
-	# está entre ['a','z']?
+	add $s1, $s1, 1		# si $v0: 1, suma 1 al contador de vocales
+	# es minúscula? está entre ['a','z']?
 	blt $s2, 'a', siguiente	# si $s2 < 'a', salta a siguiente
 	bgt $s2, 'z', siguiente	# si $s2 > 'z', salta a siguiente
 	# pasó el filtro y está entre ['a','z']
@@ -85,14 +90,37 @@ fin_loop:
 	
 	jr $ra			# regresa a main
 		
+# Subrutina (hoja): es_vocal
+# Propósito: evalúa si el argumento recibido es una vocal. Si es una vocal devuelve 1,
+# caso contrario, devuelve 0.
+# Entrada: $a0: caracter acutal a evaluar
+# Salida: $v0: 1 o $v0: 0
+
+es_vocal:
+	li $v0, 1		# asumimos que es vocal
+	beq $a0, 'a', fin_vocal	
+	beq $a0, 'e', fin_vocal
+	beq $a0, 'i', fin_vocal
+	beq $a0, 'o', fin_vocal
+	beq $a0, 'u', fin_vocal
+	
+	beq $a0, 'A', fin_vocal
+	beq $a0, 'E', fin_vocal
+	beq $a0, 'I', fin_vocal
+	beq $a0, 'O', fin_vocal
+	beq $a0, 'U', fin_vocal
+	
+	li $v0, 0		# si no tuvo coincidencia con ninguna, no es vocal
+		
+fin_vocal:
+	jr $ra	
+	
 
 	
-
-	
-	
-# en MARS se pueden cargar caracteres directamente usando comillas simples,
-# por ejemplo li $t3, 'a', o usar sus valores ASCII en hexadecimal/decimal.
-	
+# Notas:
 # En ASCII, todas las letras mayúsculas tienen el bit 5 (posición 0x20,
 # binario 0010 0000) apagado en 0, mientras que todas las minúsculas lo 
 # tienen encendido en 1.
+
+# En MARS se pueden cargar caracteres directamente usando comillas simples,
+# por ejemplo li $t3, 'a', o usar sus valores ASCII en hexadecimal/decimal.
