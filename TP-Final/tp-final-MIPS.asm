@@ -52,14 +52,14 @@ main:
     	
 menu_loop:
 	# 2. Imprimir el menú de opciones
-	li $v0, 4		# Syscall 4: Print String
+	li $v0, 4		
     	la $a0, menu		
     	syscall
     	
 	# 3. Leer la opción del usuario
-    	li $v0, 5		# Syscall 5: Read Integer
-    	syscall			# El número ingresado queda guardado en $v0
-    	move $s0, $v0		# Guarda la opción en $s0 de forma segura
+    	li $v0, 5		
+    	syscall			
+    	move $s0, $v0			# Guarda la opción en $s0 de forma segura
 	
 	# 4. Validar la entrada (0 = Salir, 1-8 = Ejecutar, Otro = Error)
     	beqz $s0, exit_program		# Si ingresó 0, salta al fin del programa
@@ -71,7 +71,7 @@ menu_loop:
 	# Como la opción 1 está en la posición 0, le resto 1 a la opción
     	addi $t1, $s0, -1
     	# Multiplico por 4 para obtener el byte exacto en la memoria
-    	sll $t1, $t1, 2		# Shift Left Logical por 2 es igual a multiplicar por 4
+    	mul $t1, $t1, 4		
     	# Buscar la dirección en el vector
     	la $t0, schedv		# Dirección base del vector
     	add $t0, $t0, $t1	# Suma el desplazamiento
@@ -98,27 +98,25 @@ invalid_option:
     	j menu_loop
 
 # Subrutina: print_error
-# Propósito: Imprime el código numérico de error formateado en consola ("Error: XXX\n")
-# Entrada: $a0 contiene el número de error (ej: 101, 201)
+# Propósito: Imprime el código numérico de error en consola ("Error: XXX\n")
+# Entrada: $a0: el número de error (ej: 101, 201)
 
 print_error:
-    	# 1. Asegurar el número. 
-    	# Como syscall 4 va a sobrescribir $a0 con la dirección del texto, 
-    	# se guarda el número del error en un temporal ($t0) para no perderlo.
+    	# 1. Asegurar el número.
     	move $t0, $a0       
 
     	# 2. Imprimir el texto "Error: "
-    	li $v0, 4		# Syscall 4: Imprimir string
+    	li $v0, 4		
     	la $a0, error       	
     	syscall
 
     	# 3. Imprimir el número del error
-    	li $v0, 1           	# Syscall 1: Imprimir entero
-    	move $a0, $t0       	# Recupera el número desde $t0 hacia $a0
+    	li $v0, 1           	
+    	move $a0, $t0       	
     	syscall
 
     	# 4. Imprimir un salto de línea en consola
-    	li $v0, 4		# Syscall 4: Imprimir string
+    	li $v0, 4		
     	la $a0, return		
     	syscall
 
@@ -126,7 +124,7 @@ print_error:
     	jr $ra
 						
 exit_program:
-    	li $v0, 10		# Syscall 10: Exit program
+    	li $v0, 10		
     	syscall
 
 # Subrutina: newcategory
@@ -146,9 +144,9 @@ newcategory:
     	move $a2, $v0           # Mueve el puntero del nuevo string (que devolvió getblock) al registro $a2
 
     	# 3. Añadir el nodo a la lista de categorías (cclist)
-    	la $a0, cclist          # Carga en $a0 la dirección de la lista de categorías
-    	li $a1, 0               # $a1 = NULL (0). Indica que es un nodo de categoría (su lista interna de objetos está vacía)
-    	jal addnode             # Llama a addnode para enganchar el nuevo bloque en la lista
+    	la $a0, cclist          # $a0: dirección de la lista de categorías
+    	li $a1, 0               # $a1 = 0. Indica que es un nodo de categoría (la lista interna de objetos está vacía)
+    	jal addnode             # Salta a addnode para enganchar el nuevo bloque en la lista
 
     	# 4. Actualizar la categoría activa (wclist) si era la primera
     	lw $t0, wclist          # Carga en $t0 el puntero actual de la categoría de trabajo
@@ -172,8 +170,8 @@ nextcategory:
     	lw $t0, wclist          # Carga el puntero a la categoría seleccionada actual
     	beqz $t0, error_201     # Si es 0 (no hay categorías), error 201
 
-    	lw $t1, 12($t0)         # Carga en $t1 el puntero al sucesor (next), ubicado en el offset 12
-    	beq $t0, $t1, error_202 # Si el sucesor es el mismo nodo (hay solo 1), error 202
+    	lw $t1, 12($t0)         # Carga en $t1 el puntero al siguiente (next), ubicado en el offset 12
+    	beq $t0, $t1, error_202 # Si el siguiente es el mismo nodo (hay solo 1), error 202
 
     	sw $t1, wclist          # Actualiza wclist con el nuevo nodo seleccionado
     	j selcat_success        # Salta a imprimir mensaje de éxito
@@ -188,8 +186,8 @@ prevcategory:
     	lw $t0, wclist          # Carga el puntero a la categoría actual
     	beqz $t0, error_201     # Si es 0 (no hay categorías), error 201
 
-    	lw $t1, 0($t0)          # Carga en $t1 el puntero al antecesor (prev), ubicado en el offset 0
-    	beq $t0, $t1, error_202 # Si el antecesor es el mismo nodo (hay solo 1), error 202
+    	lw $t1, 0($t0)          # Carga en $t1 el puntero al anterior (prev), ubicado en el offset 0
+    	beq $t0, $t1, error_202 # Si el anterior es el mismo nodo (hay solo 1), error 202
 
     	sw $t1, wclist          # Actualiza wclist con el nuevo nodo
     	j selcat_success        
@@ -219,50 +217,50 @@ selcat_success:
 
 # Subrutina: listcategories
 # Propósito: Recorre e imprime en consola la lista completa de categorías, 
-# anteponiendo el símbolo '>' únicamente a la categoría seleccionada en curso.
+# con el símbolo '>' únicamente a la categoría seleccionada en curso.
 # Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 301 si no hay categorías.
 
 listcategories:
     	lw $t0, cclist          # Carga el puntero inicial de la lista de categorías
-    	beqz $t0, error_301     # Si la lista está vacía (0), salta a devolver error 301
+    	beqz $t0, error_301     # Si la lista está vacía (0), salta al error 301
 
     	lw $t1, wclist          # Carga la dirección de la categoría en curso (seleccionada)
-    	move $t2, $t0           # Puntero iterador: empieza en el primer nodo (cclist)
+    	move $t2, $t0           # Puntero: empieza en el primer nodo (cclist)
 
 list_loop:
-    	# 1. Determina si el nodo actual ($t2) es la categoría seleccionada ($t1)
+    	# 1. Determinar si el nodo actual ($t2) es la categoría seleccionada ($t1)
     	bne $t2, $t1, print_space
     
-    	# Imprime el selector '>' (código ASCII 62)
+    	# Imprimir el '>' (código ASCII 62)
     	li $a0, 62              
     	j print_char
 
 print_space:
-    	# Imprime un espacio ' ' (código ASCII 32)
+    	# Imprimir un espacio ' ' (código ASCII 32)
     	li $a0, 32              
 
 print_char:
-    	li $v0, 11              # Syscall 11: Print Character
+    	li $v0, 11              
     	syscall
 
-    	# 2. Imprime el nombre de la categoría actual
-    	# Recordatorio: el nombre/string está en el desplazamiento 8 ($t2 + 8)
-    	lw $a0, 8($t2)          # Carga la dirección del string guardado en el nodo
-    	li $v0, 4               # Syscall 4: Print String
-    	syscall                 # Imprime el nombre (getblock ya incluye el \n)
+    	# 2. Imprimir el nombre de la categoría actual
+    	# el nombre está en el desplazamiento 8 ($t2 + 8)
+    	lw $a0, 8($t2)          # Carga la dirección del nombre guardado en el nodo
+    	li $v0, 4               
+    	syscall                 
 
-    	# 3. Avanza al siguiente nodo en la lista circular
-    	lw $t2, 12($t2)         # Carga el puntero al sucesor (offset 12)
+    	# 3. Avanzar al siguiente nodo en la lista circular
+    	lw $t2, 12($t2)         # Carga el puntero al siguiente (offset 12)
 
-    	# 4. Condición de parada: si no volvimos al inicio ($t0), continúa el bucle
+    	# 4. Condición: si no volvio al inicio ($t0), continúa el bucle
     	bne $t2, $t0, list_loop
 
-    	# Si completamos la vuelta, retorna éxito
-    	li $v0, 0               # Cero indica éxito
+    	# Si completo la vuelta, retorna éxito
+    	li $v0, 0               
     	jr $ra
 
 error_301:
-    	li $v0, 301             # Error 301: No hay categorías creadas
+    	li $v0, 301             # Error 301: no hay categorías creadas
     	jr $ra
 
 # Subrutina: delcategory
@@ -271,54 +269,54 @@ error_301:
 # Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 401 si no hay categorías.
 
 delcategory:
-	# 1. Preservar registros en la pila ($ra y los $s que usemos)
+	# 1. Preservar registros en la pila ($ra y los $s)
     	addi $sp, $sp, -12
     	sw $ra, 12($sp)
     	sw $s0, 8($sp)
     	sw $s1, 4($sp)
     	
     	# 2. Verificar si hay categorías creadas
-    	lw $s0, wclist          # $s0 = categoría actual a borrar
-    	beqz $s0, error_401     # Si es NULL/0, salta a error 401
+    	lw $s0, wclist          # $s0: categoría actual a borrar
+    	beqz $s0, error_401     # Si es null/0, salta a error 401
     	
 del_objects_loop:
     	# 3. Revisar la sublista de objetos (ubicada en offset 4 de la categoría)
-    	lw $t0, 4($s0)          # $t0 = dirección del primer objeto de la sublista
+    	lw $t0, 4($s0)          # $t0: dirección del primer objeto de la sublista
     	beqz $t0, del_cat_node  # Si la lista de objetos está vacía (0), va a borrar la categoría
     	
     	# Borrar el primer objeto de la lista circular de objetos
-    	move $a0, $t0           # Argumento 1: Nodo del objeto a borrar
-    	addi $a1, $s0, 4        # Argumento 2: Dirección del puntero a la lista de objetos
+    	move $a0, $t0           # $a0: nodo del objeto a borrar
+    	addi $a1, $s0, 4        # $a1: dirección del puntero a la lista de objetos
     	jal delnode             # Borra el objeto y libera su memoria con sfree
     	j del_objects_loop      # Repite hasta que la sublista quede en 0
     	
 del_cat_node:
     	# 4. Determinar cuál será la nueva categoría seleccionada (wclist)
-    	lw $t1, 12($s0)         # $t1 = Siguiente categoría (offset 12)
+    	lw $t1, 12($s0)         # $t1: siguiente categoría (offset 12)
     	beq $t1, $s0, only_one_cat # Si la siguiente es ella misma, era la única que había
 
     	sw $t1, wclist          # Si hay más, wclist pasa a ser la siguiente
     	j execute_del_cat
     	
 only_one_cat:
-	sw $zero, wclist        # Nulifica la categoría activa
-    	sw $zero, cclist        # Nulifica la cabeza de la lista principal
+	sw $zero, wclist        # nulifica la categoría activa
+    	sw $zero, cclist        # nulifica la cabeza de la lista principal
 	
 execute_del_cat:
     	# 5. Borrar la categoría de la lista cclist
-    	move $a0, $s0           # Argumento 1: Nodo de la categoría a borrar
-    	la $a1, cclist          # Argumento 2: Dirección de la lista principal de categorías
-    	jal delnode             # Borra la categoría y libera su bloque de memoria
+    	move $a0, $s0           # $a0: nodo de la categoría a borrar
+    	la $a1, cclist          # $a1: dirección de la lista principal de categorías
+    	jal delnode             # Borra la categoría y libera el bloque de memoria
 
     	# 6. Salida exitosa
-    	li $v0, 0               # Éxito (0)
+    	li $v0, 0               
     	j delcategory_exit
      
 error_401:
     	li $v0, 401             # Error 401: No hay categorías para borrar
 
 delcategory_exit:
-    	# 7. Restaurar pila y retornar
+    	# 7. Restaurar la pila y volver
     	lw $s1, 4($sp)
     	lw $s0, 8($sp)
     	lw $ra, 12($sp)
@@ -331,23 +329,23 @@ delcategory_exit:
 # Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 501 si no hay categoría seleccionada.
 
 newobject:
-    	# 1. Reservar pila
+    	# 1. Reservar la pila
     	addi $sp, $sp, -8
     	sw $ra, 8($sp)
     	sw $s0, 4($sp)
     
    	# 2. Verificar que exista una categoría activa
-    	lw $s0, wclist          # $s0 = nodo de la categoría activa
+    	lw $s0, wclist          # $s0: nodo de la categoría activa
     	beqz $s0, error_501     # Si no hay categoría seleccionada, error 601
 
 	# 3. Pedir el nombre del objeto
     	la $a0, objName         # Carga mensaje "Ingrese el nombre de un objeto: "
     	jal getblock            # Asigna bloque y lee el string
-    	move $a2, $v0           # $a2 = puntero al string ingresado
+    	move $a2, $v0           # $a2: puntero al string ingresado
     	
     	# 4. Agregar el nodo a la sublista de objetos
-    	addi $a0, $s0, 4        # $a0 = dirección de la sublista de objetos (offset 4 de wclist)
-    	move $a1, $s0           # $a1 = puntero al nodo de la categoría contenedora
+    	addi $a0, $s0, 4        # $a0: dirección de la sublista de objetos (offset 4 de wclist)
+    	move $a1, $s0           # $a1: puntero al nodo de la categoría contenedora
     	jal addnode             # Engancha el nodo en la lista de objetos
 
 	# 5. Retornar éxito
@@ -365,7 +363,7 @@ newobject_exit:
 
 # Subrutina: listobjects
 # Propósito: Recorre e imprime la sublista de objetos de la categoría en 
-# curso (wclist), mostrando el ID (dirección de memoria) y nombre.
+# curso (wclist), mostrando el ID y el nombre.
 # Devuelve:  $v0 = 0 si tuvo éxito, $v0 = 601 si no hay categorías creadas, 
 # $v0 = 602 si la categoría seleccionada no contiene objetos.
 
@@ -373,15 +371,15 @@ listobjects:
     	lw $t0, wclist          # Carga categoría activa
     	beqz $t0, error_601     # Si es 0, error 601
 
-    	lw $t1, 4($t0)          # Carga cabeza de la sublista de objetos (offset 4)
+    	lw $t1, 4($t0)          # Carga la cabeza de la sublista de objetos (offset 4)
     	beqz $t1, error_602     # Si es 0, la categoría no tiene objetos (error 602)
 
-    	move $t2, $t1           # $t2 = Puntero iterador (arranca en la cabeza de objetos)
+    	move $t2, $t1           # $t2: Puntero (arranca en la cabeza de objetos)
 
 list_obj_loop:
-    	# 1. Imprimir ID del objeto (la dirección de memoria del nodo en decimal/hex)
+    	# 1. Imprimir ID del objeto
     	move $a0, $t2           # Pasa la dirección del nodo como ID
-    	li $v0, 1               # Syscall 1: Print Integer
+    	li $v0, 1               
     	syscall
 
     	# 2. Imprimir separador " -> "
